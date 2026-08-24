@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <!-- 아이패드 홈 화면에 추가했을 때 앱처럼 보이게 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="행복(은)행">
+
+    <title>함께여서 행복(은)행</title>
+
+    <style>
+
+        /* =========================
+           기본 설정
+        ========================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Apple SD Gothic Neo",
+                "Noto Sans KR",
+                sans-serif;
+
+            background: #f8f4ec;
+        }
+
+        body {
+            touch-action: manipulation;
+        }
+
+        button {
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+
+            -webkit-appearance: none;
+            appearance: none;
+
+            touch-action: manipulation;
+        }
+
+        #app {
+            position: relative;
+
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+
+            overflow: hidden;
+        }
+
+
+        /* =========================
+           페이지 전환
+           새 창이 열리는 듯한 효과
+        ========================= */
+
+        .page {
+            position: absolute;
+            inset: 0;
+
+            width: 100%;
+            height: 100%;
+
+            display: flex;
+            flex-direction: column;
+
+            justify-content: center;
+            align-items: center;
+
+            padding: 30px;
+
+            opacity: 0;
+            visibility: hidden;
+
+            transform:
+                scale(0.96)
+                translateY(15px);
+
+            pointer-events: none;
+
+            transition:
+                opacity 0.65s ease,
+                transform 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+                visibility 0.75s;
+
+            overflow: hidden;
+        }
+
+        .page.active {
+            opacity: 1;
+            visibility: visible;
+
+            transform:
+                scale(1)
+                translateY(0);
+
+            pointer-events: auto;
+
+            z-index: 2;
+        }
+
+        .page.leaving {
+            opacity: 0;
+
+            transform:
+                scale(1.03)
+                translateY(-10px);
+
+            z-index: 3;
+        }
+
+
+        /* =========================
+           글자
+        ========================= */
+
+        h1 {
+            font-size: clamp(35px, 7vw, 72px);
+            line-height: 1.45;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: clamp(27px, 5vw, 52px);
+            line-height: 1.4;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        p {
+            text-align: center;
+            line-height: 1.7;
+        }
+
+
+        /* =========================
+           공통 버튼
+        ========================= */
+
+        .main-button {
+            margin-top: 35px;
+
+            padding: 18px 45px;
+
+            border-radius: 50px;
+
+            background: #292929;
+            color: white;
+
+            font-size: 18px;
+            font-weight: bold;
+
+            box-shadow:
+                0 10px 25px
+                rgba(0, 0, 0, 0.15);
+
+            transition: transform 0.2s ease;
+        }
+
+        .main-button:active {
+            transform: scale(0.95);
+        }
+
+
+        /* =========================
+           시작 화면
+        ========================= */
+
+        #page-start {
+            background:
+                linear-gradient(
+                    135deg,
+                    #fff8e9,
+                    #f4dca8,
+                    #f7e8c8
+                );
+        }
+
+        .welcome-content {
+            position: relative;
+            z-index: 5;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .welcome-small {
+            margin-bottom: 20px;
+
+            color: #94734b;
+
+            font-size: 14px;
+            letter-spacing: 4px;
+        }
+
+        /* (은)만 작게 */
+        .small-eun {
+            font-size: 0.35em;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        #start-button {
+            margin-top: 45px;
+
+            padding: 19px 55px;
+
+            border-radius: 50px;
+
+            background: #292929;
+            color: white;
+
+            font-size: 19px;
+            font-weight: bold;
+
+            box-shadow:
+                0 12px 30px
+                rgba(0, 0, 0, 0.18);
+
+            animation:
+                buttonFloat
+                2.5s
+                ease-in-out
+                infinite;
+        }
+
+
+        /* 반짝이 */
+
+        .sparkles {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .sparkle {
+            position: absolute;
+
+            color: white;
+
+            text-shadow:
+                0 0 10px rgba(255,255,255,0.9),
+                0 0 25px rgba(255,220,130,0.8);
+
+            animation:
+                sparkle
+                3s
+                ease-in-out
+                infinite;
+        }
+
+        .s1 {
+            top: 12%;
+            left: 12%;
+            font-size: 35px;
+        }
+
+        .s2 {
+            top: 20%;
+            right: 13%;
+            font-size: 45px;
+            animation-delay: 0.7s;
+        }
+
+        .s3 {
+            top: 55%;
+            left: 8%;
+            font-size: 28px;
+            animation-delay: 1.4s;
+        }
+
+        .s4 {
+            bottom: 15%;
+            right: 10%;
+            font-size: 40px;
+            animation-delay: 0.3s;
+        }
+
+        .s5 {
+            top: 8%;
+            left: 48%;
+            font-size: 22px;
+            animation-delay: 2s;
+        }
+
+        .s6 {
+            bottom: 18%;
+            left: 20%;
+            font-size: 30px;
+            animation-delay: 1s;
+        }
+
+
+        /* =========================
+           메뉴
+        ========================= */
+
+        #page-menu {
+            background:
+                linear-gradient(
+                    135deg,
+                    #f8f4ef,
+                    #e9ddd0
+                );
+        }
+
+        .menu-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .menu-button {
+            width: 220px;
+            height: 140px;
+
+            border-radius: 25px;
+
+            background: white;
+
+            font-size: 25px;
+            font-weight: bold;
+
+            box-shadow:
+                0 12px 25px
+                rgba(0,0,0,0.1);
+
+            transition: transform 0.2s ease;
+        }
+
+        .menu-button:active {
+            transform: scale(0.95);
+        }
+
+
+        /* =========================
+           금액 선택
+        ========================= */
+
+        #page-select {
+            background:
+                linear-gradient(
+                    135deg,
+                    #edf4f5,
+                    #d8e7ec
+                );
+        }
+
+        .amount-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 180px);
+
+            gap: 15px;
+        }
+
+        .amount-button {
+            padding: 24px 10px;
+
+            border-radius: 18px;
+
+            background: white;
+
+            font-size: 22px;
+            font-weight: bold;
+
+            box-shadow:
+                0 8px 20px
+                rgba(0,0,0,0.1);
+
+            transition: transform 0.2s ease;
+        }
+
+        .amount-button:active {
+            transform: scale(0.95);
+        }
+
+        #correct-button {
+            grid-column: span 2;
+
+            background: #292929;
+            color: white;
+        }
+
+
+        /* =========================
+           카드 화면
+        ========================= */
+
+        #page-card {
+            background:
+                linear-gradient(
+                    135deg,
+                    #faeee6,
+                    #ead7c5
+                );
+        }
+
+        .card-guide {
+            margin-top: -5px;
+            margin-bottom: 20px;
+
+            color: #666;
+            font-size: 15px;
+        }
+
+        .card-area {
+            position: relative;
+
+            width: 330px;
+            height: 280px;
+
+            margin-top: 10px;
+        }
+
+        /* 카드가 들어가는 검은 슬롯 */
+        .card-slot {
+            position: absolute;
+
+            top: 15px;
+            left: 50%;
+
+            transform: translateX(-50%);
+
+            width: 300px;
+            height: 18px;
+
+            border-radius: 20px;
+
+            background: #242424;
+
+            z-index: 5;
+
+            box-shadow:
+                inset 0 2px 5px
+                rgba(0,0,0,0.7);
+        }
+
+        /* 움직이는 카드 */
+        #event-card {
+            position: absolute;
+
+            left: 50%;
+            bottom: 0;
+
+            width: 240px;
+            height: 145px;
+
+            padding: 22px;
+
+            border-radius: 18px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #222,
+                    #5a5a5a
+                );
+
+            color: white;
+            text-align: left;
+
+            box-shadow:
+                0 15px 30px
+                rgba(0,0,0,0.25);
+
+            animation:
+                cardInsert
+                2.6s
+                ease-in-out
+                infinite;
+
+            z-index: 3;
+        }
+
+        .chip {
+            width: 45px;
+            height: 30px;
+
+            margin-bottom: 25px;
+
+            border-radius: 5px;
+
+            background: #d6b34c;
+        }
+
+
+        /* =========================
+           비밀번호
+        ========================= */
+
+        #page-password {
+            background:
+                linear-gradient(
+                    135deg,
+                    #e7f0f5,
+                    #d5e3e8
+                );
+        }
+
+        #password-display {
+            min-height: 60px;
+
+            margin: 20px 0 8px;
+
+            font-size: 38px;
+
+            letter-spacing: 10px;
+        }
+
+        #password-error {
+            min-height: 30px;
+
+            color: #c74444;
+
+            font-size: 15px;
+
+            opacity: 0;
+
+            transition: opacity 0.3s ease;
+        }
+
+        #password-error.show {
+            opacity: 1;
+        }
+
+        .keypad {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 80px);
+
+            gap: 12px;
+
+            margin-top: 10px;
+        }
+
+        .key {
+            width: 80px;
+            height: 62px;
+
+            border-radius: 14px;
+
+            background: white;
+
+            font-size: 21px;
+            font-weight: bold;
+
+            box-shadow:
+                0 5px 15px
+                rgba(0,0,0,0.1);
+        }
+
+        .key:active {
+            transform: scale(0.94);
+        }
+
+
+        /* =========================
+           기다리는 화면
+        ========================= */
+
+        #page-wait {
+            background:
+                linear-gradient(
+                    135deg,
+                    #f4edf7,
+                    #e5d9ec
+                );
+        }
+
+        .loading {
+            width: 70px;
+            height: 70px;
+
+            margin-top: 30px;
+
+            border:
+                7px solid
+                rgba(0,0,0,0.1);
+
+            border-top-color: #333;
+
+            border-radius: 50%;
+
+            animation:
+                spin
+                1s
+                linear
+                infinite;
+        }
+
+
+        /* =========================
+           오류 화면
+        ========================= */
+
+        #page-error {
+            background:
+                linear-gradient(
+                    135deg,
+                    #faeeee,
+                    #efd4d4
+                );
+        }
+
+        .error-icon {
+            width: 80px;
+            height: 80px;
+
+            margin-bottom: 20px;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            border-radius: 50%;
+
+            background: #333;
+            color: white;
+
+            font-size: 45px;
+            font-weight: bold;
+        }
+
+
+        /* =========================
+           칠순 축하
+        ========================= */
+
+        #page-celebrate {
+            background:
+                radial-gradient(
+                    circle at top,
+                    #fff9ed,
+                    #f3d797
+                );
+        }
+
+        #celebrate-content {
+            position: relative;
+            z-index: 10;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .celebrate-text {
+            margin-top: 18px;
+            font-size: clamp(22px, 4vw, 30px);
+            line-height: 1.6;
+        }
+
+        #creator-button {
+            margin-top: 45px;
+
+            padding: 13px 24px;
+
+            border-radius: 30px;
+
+            background:
+                rgba(255,255,255,0.7);
+
+            color: #695945;
+
+            opacity: 0;
+            pointer-events: none;
+
+            transform: translateY(15px);
+
+            transition:
+                opacity 1s ease,
+                transform 1s ease;
+        }
+
+        #creator-button.show {
+            opacity: 1;
+            pointer-events: auto;
+
+            transform: translateY(0);
+        }
+
+
+        /* 꽃가루 */
+
+        .petal {
+            position: absolute;
+
+            top: -30px;
+
+            width: 12px;
+            height: 12px;
+
+            border-radius:
+                70% 30% 70% 30%;
+
+            pointer-events: none;
+
+            animation:
+                petalFall
+                linear
+                forwards;
+
+            z-index: 3;
+        }
+
+
+        /* =========================
+           제작자
+        ========================= */
+
+        #page-creator {
+            background:
+                linear-gradient(
+                    135deg,
+                    #fffaf1,
+                    #f0dfbf
+                );
+        }
+
+        .creator-box {
+            width: min(500px, 90vw);
+
+            padding: 40px 30px;
+
+            border-radius: 30px;
+
+            background:
+                rgba(255,255,255,0.7);
+
+            text-align: center;
+
+            box-shadow:
+                0 15px 40px
+                rgba(0,0,0,0.1);
+        }
+
+        .creator-item {
+            margin: 20px 0;
+
+            font-size: 18px;
+            line-height: 1.7;
+        }
+
+        .creator-item strong {
+            display: block;
+
+            margin-bottom: 5px;
+
+            font-size: 14px;
+
+            color: #9b7b52;
+        }
+
+
+        /* =========================
+           애니메이션
+        ========================= */
+
+        @keyframes buttonFloat {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        @keyframes sparkle {
+
+            0%,
+            100% {
+                opacity: 0;
+
+                transform:
+                    scale(0.5)
+                    rotate(0deg);
+            }
+
+            50% {
+                opacity: 1;
+
+                transform:
+                    scale(1.2)
+                    rotate(45deg);
+            }
+        }
+
+        /* 카드가 아래에서 올라와 슬롯으로 들어감 */
+        @keyframes cardInsert {
+
+            0% {
+                transform:
+                    translateX(-50%)
+                    translateY(100px);
+            }
+
+            45% {
+                transform:
+                    translateX(-50%)
+                    translateY(-40px);
+            }
+
+            55% {
+                transform:
+                    translateX(-50%)
+                    translateY(-40px);
+            }
+
+            100% {
+                transform:
+                    translateX(-50%)
+                    translateY(100px);
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes petalFall {
+
+            from {
+                transform:
+                    translateY(-30px)
+                    rotate(0deg);
+            }
+
+            to {
+                transform:
+                    translateY(110vh)
+                    translateX(80px)
+                    rotate(720deg);
+            }
+        }
+
+
+        /* =========================
+           아이패드 / 작은 화면
+        ========================= */
+
+        @media (max-width: 600px) {
+
+            .menu-buttons {
+                flex-direction: column;
+            }
+
+            .menu-button {
+                width: 260px;
+                height: 100px;
+            }
+
+            .amount-grid {
+                grid-template-columns:
+                    repeat(2, 145px);
+            }
+
+            .card-area {
+                transform: scale(0.9);
+            }
+
+            .card-slot {
+                width: 270px;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+<div id="app">
+
+
+    <!-- 시작 화면 -->
+
+    <section class="page active" id="page-start">
+
+        <div class="sparkles">
+
+            <span class="sparkle s1">✦</span>
+            <span class="sparkle s2">✧</span>
+            <span class="sparkle s3">✦</span>
+            <span class="sparkle s4">✧</span>
+            <span class="sparkle s5">✦</span>
+            <span class="sparkle s6">✧</span>
+
+        </div>
+
+        <div class="welcome-content">
+
+            <div class="welcome-small">
+                ✦ HAPPY BANK ✦
+            </div>
+
+            <h1>
+                함께여서 행복<span class="small-eun">(은)</span>행에<br>
+                오신 것을 환영합니다
+            </h1>
+
+            <button id="start-button" type="button">
+                시작하기 →
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- 메뉴 화면 -->
+
+    <section class="page" id="page-menu">
+
+        <h2>
+            무엇을 원하시나요?
+        </h2>
+
+        <div class="menu-buttons">
+
+            <button
+                class="menu-button"
+                id="withdraw-menu"
+                type="button">
+                출금
+            </button>
+
+            <button
+                class="menu-button"
+                id="money-menu"
+                type="button">
+                돈 꺼내기
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- 금액 선택 -->
+
+    <section class="page" id="page-select">
+
+        <h2>
+            얼마를 꺼내시겠어요?
+        </h2>
+
+        <div class="amount-grid">
+
+            <button class="amount-button wrong-button" type="button">
+                10만원
+            </button>
+
+            <button class="amount-button wrong-button" type="button">
+                30만원
+            </button>
+
+            <button class="amount-button wrong-button" type="button">
+                50만원
+            </button>
+
+            <button class="amount-button wrong-button" type="button">
+                70만원
+            </button>
+
+            <button
+                class="amount-button"
+                id="correct-button"
+                type="button">
+                100만원
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- 카드 화면 -->
+
+    <section class="page" id="page-card">
+
+        <h2>
+            카드를 하단에 넣어주세요
+        </h2>
+
+        <p class="card-guide">
+            - 넣으신 후 화면 속 카드를 눌러주세요 -
+        </p>
+
+        <div class="card-area">
+
+            <div class="card-slot"></div>
+
+            <button id="event-card" type="button">
+
+                <div class="chip"></div>
+
+                함께여서 행복(은)행<br>
+                HAPPY BANK
+
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- 비밀번호 -->
+
+    <section class="page" id="page-password">
+
+        <h2>
+            비밀번호를<br>
+            입력해주세요
+        </h2>
+
+        <p>
+            네 자리 숫자를 입력해주세요.
+        </p>
+
+        <div id="password-display">
+            ○ ○ ○ ○
+        </div>
+
+        <div id="password-error"></div>
+
+        <div class="keypad">
+
+            <button class="key number-key" type="button">1</button>
+            <button class="key number-key" type="button">2</button>
+            <button class="key number-key" type="button">3</button>
+
+            <button class="key number-key" type="button">4</button>
+            <button class="key number-key" type="button">5</button>
+            <button class="key number-key" type="button">6</button>
+
+            <button class="key number-key" type="button">7</button>
+            <button class="key number-key" type="button">8</button>
+            <button class="key number-key" type="button">9</button>
+
+            <button
+                class="key"
+                id="delete-button"
+                type="button">
+                ←
+            </button>
+
+            <button class="key number-key" type="button">
+                0
+            </button>
+
+            <button
+                class="key"
+                id="enter-button"
+                type="button">
+                확인
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- 기다리는 화면 -->
+
+    <section class="page" id="page-wait">
+
+        <h2>
+            잠시만 기다려주세요
+        </h2>
+
+        <p>
+            요청하신 내용을 확인하고 있습니다.
+        </p>
+
+        <div class="loading"></div>
+
+    </section>
+
+
+    <!-- 오류 화면 -->
+
+    <section class="page" id="page-error">
+
+        <div class="error-icon">
+            !
+        </div>
+
+        <h2>
+            오류입니다
+        </h2>
+
+        <p>
+            다시 한 번 확인해주세요.
+        </p>
+
+        <button
+            class="main-button"
+            id="back-button"
+            type="button">
+            되돌아가기
+        </button>
+
+    </section>
+
+
+    <!-- 칠순 축하 -->
+
+    <section class="page" id="page-celebrate">
+
+        <div id="celebrate-content">
+
+            <h1>
+                칠순을 정말정말<br>
+                축하드립니다! 🎉
+            </h1>
+
+            <p class="celebrate-text">
+                늘 건강하시고 행복한 일만<br>
+                가득하시길 바랍니다~♡
+            </p>
+
+            <button
+                id="creator-button"
+                type="button">
+                제작자가 궁금하신가요~?
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- 제작자 -->
+
+    <section class="page" id="page-creator">
+
+        <div class="creator-box">
+
+            <h2>
+                함께 만든 마음
+            </h2>
+
+            <div class="creator-item">
+                <strong>제작</strong>
+                장군이
+            </div>
+
+            <div class="creator-item">
+                <strong>아이디어</strong>
+                이쁜이, 깜찍이
+            </div>
+
+            <div class="creator-item">
+                <strong>응원</strong>
+                겸둥이, 깜찍이
+            </div>
+
+            <div class="creator-item">
+                <strong>함께한 마음</strong>
+                김은숙, 김윤경,<br>
+                김대한, 차오석
+            </div>
+
+            <button
+                class="main-button"
+                id="creator-back"
+                type="button">
+                돌아가기
+            </button>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- =========================
+     여기서 생일축하.mp3 사용
+========================= -->
+
+<audio id="celebrate-music" preload="auto">
+    <source src="생일축하.mp3" type="audio/mpeg">
+</audio>
+
+
+<script>
+
+    /* =========================
+       기본 변수
+    ========================= */
+
+    const correctPassword = "0724";
+
+    let currentPage = 0;
+    let currentPassword = "";
+    let moving = false;
+
+    let waitTimer;
+    let creatorTimer;
+
+    const pages =
+        document.querySelectorAll(".page");
+
+
+    /* =========================
+       페이지 이동
+    ========================= */
+
+    function movePage(pageNumber) {
+
+        if (moving) return;
+
+        if (
+            pageNumber < 0 ||
+            pageNumber >= pages.length
+        ) return;
+
+
+        const oldPage =
+            pages[currentPage];
+
+        const newPage =
+            pages[pageNumber];
+
+
+        if (oldPage === newPage) return;
+
+
+        moving = true;
+
+
+        newPage.classList.add("active");
+
+        oldPage.classList.add("leaving");
+
+        currentPage = pageNumber;
+
+
+        setTimeout(function () {
+
+            oldPage.classList.remove("active");
+            oldPage.classList.remove("leaving");
+
+            moving = false;
+
+        }, 750);
+
+    }
+
+
+    /* =========================
+       시작하기
+    ========================= */
+
+    document
+        .getElementById("start-button")
+        .addEventListener("click", function () {
+
+            movePage(1);
+
+        });
+
+
+    /* =========================
+       메뉴
+    ========================= */
+
+    document
+        .getElementById("withdraw-menu")
+        .addEventListener("click", function () {
+
+            movePage(2);
+
+        });
+
+
+    document
+        .getElementById("money-menu")
+        .addEventListener("click", function () {
+
+            movePage(2);
+
+        });
+
+
+    /* =========================
+       틀린 금액
+    ========================= */
+
+    document
+        .querySelectorAll(".wrong-button")
+        .forEach(function (button) {
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    movePage(5);
+
+                    clearTimeout(waitTimer);
+
+                    waitTimer =
+                        setTimeout(function () {
+
+                            movePage(6);
+
+                        }, 2000);
+
+                }
+            );
+
+        });
+
+
+    /* =========================
+       100만원 선택
+    ========================= */
+
+    document
+        .getElementById("correct-button")
+        .addEventListener("click", function () {
+
+            movePage(3);
+
+        });
+
+
+    /* =========================
+       오류에서 금액 선택으로
+    ========================= */
+
+    document
+        .getElementById("back-button")
+        .addEventListener("click", function () {
+
+            movePage(2);
+
+        });
+
+
+    /* =========================
+       카드 클릭
+    ========================= */
+
+    document
+        .getElementById("event-card")
+        .addEventListener("click", function () {
+
+            currentPassword = "";
+
+            updatePassword();
+
+            document
+                .getElementById("password-error")
+                .classList.remove("show");
+
+            movePage(4);
+
+        });
+
+
+    /* =========================
+       비밀번호 표시
+    ========================= */
+
+    function updatePassword() {
+
+        let result = "";
+
+        for (let i = 0; i < 4; i++) {
+
+            if (i < currentPassword.length) {
+                result += "● ";
+            }
+
+            else {
+                result += "○ ";
+            }
+
+        }
+
+        document
+            .getElementById("password-display")
+            .textContent = result;
+
+    }
+
+
+    /* =========================
+       숫자 입력
+    ========================= */
+
+    document
+        .querySelectorAll(".number-key")
+        .forEach(function (button) {
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    if (
+                        currentPassword.length < 4
+                    ) {
+
+                        currentPassword +=
+                            button.textContent.trim();
+
+                        updatePassword();
+
+                    }
+
+                    document
+                        .getElementById("password-error")
+                        .classList.remove("show");
+
+                }
+            );
+
+        });
+
+
+    /* =========================
+       삭제
+    ========================= */
+
+    document
+        .getElementById("delete-button")
+        .addEventListener("click", function () {
+
+            currentPassword =
+                currentPassword.slice(0, -1);
+
+            updatePassword();
+
+        });
+
+
+    /* =========================
+       비밀번호 확인
+    ========================= */
+
+    document
+        .getElementById("enter-button")
+        .addEventListener("click", function () {
+
+            const error =
+                document.getElementById(
+                    "password-error"
+                );
+
+
+            /* 4자리 아닐 때 */
+
+            if (
+                currentPassword.length !== 4
+            ) {
+
+                error.textContent =
+                    "비밀번호 네 자리를 입력해주세요.";
+
+                error.classList.add("show");
+
+                return;
+
+            }
+
+
+            /* 정답 0724 */
+
+            if (
+                currentPassword === correctPassword
+            ) {
+
+                error.classList.remove("show");
+
+
+                movePage(5);
+
+
+                clearTimeout(waitTimer);
+
+
+                waitTimer =
+                    setTimeout(function () {
+
+                        movePage(7);
+
+
+                        /* 음악 재생 */
+
+                        const music =
+                            document.getElementById(
+                                "celebrate-music"
+                            );
+
+                        music.currentTime = 0;
+
+                        music.play().catch(function () {
+
+                            console.log(
+                                "음악 재생을 시작하지 못했습니다."
+                            );
+
+                        });
+
+
+                        /* 꽃가루 */
+
+                        createPetals();
+
+
+                        /* 제작자 버튼 10초 후 */
+
+                        const creatorButton =
+                            document.getElementById(
+                                "creator-button"
+                            );
+
+                        creatorButton
+                            .classList.remove("show");
+
+
+                        clearTimeout(creatorTimer);
+
+
+                        creatorTimer =
+                            setTimeout(function () {
+
+                                creatorButton
+                                    .classList.add("show");
+
+                            }, 10000);
+
+
+                    }, 2000);
+
+            }
+
+
+            /* 비밀번호 틀림 */
+
+            else {
+
+                currentPassword = "";
+
+                updatePassword();
+
+
+                error.textContent =
+                    "비밀번호 오류입니다. 다시 입력해주세요.";
+
+                error.classList.add("show");
+
+            }
+
+        });
+
+
+    /* =========================
+       꽃가루 만들기
+    ========================= */
+
+    function createPetals() {
+
+        const page =
+            document.getElementById(
+                "page-celebrate"
+            );
+
+
+        page
+            .querySelectorAll(".petal")
+            .forEach(function (petal) {
+
+                petal.remove();
+
+            });
+
+
+        const colors = [
+            "#ff9eb5",
+            "#ffd1dc",
+            "#ffd06b",
+            "#e7b7ff",
+            "#ff86a8"
+        ];
+
+
+        for (let i = 0; i < 80; i++) {
+
+            const petal =
+                document.createElement("div");
+
+
+            petal.className =
+                "petal";
+
+
+            petal.style.left =
+                Math.random() * 100 + "%";
+
+
+            const size =
+                Math.random() * 10 + 7;
+
+
+            petal.style.width =
+                size + "px";
+
+            petal.style.height =
+                size + "px";
+
+
+            petal.style.background =
+                colors[
+                    Math.floor(
+                        Math.random() *
+                        colors.length
+                    )
+                ];
+
+
+            petal.style.animationDuration =
+                (Math.random() * 3 + 4) +
+                "s";
+
+
+            petal.style.animationDelay =
+                (Math.random() * 2) +
+                "s";
+
+
+            page.appendChild(petal);
+
+        }
+
+    }
+
+
+    /* =========================
+       제작자 버튼
+    ========================= */
+
+    document
+        .getElementById("creator-button")
+        .addEventListener("click", function () {
+
+            movePage(8);
+
+        });
+
+
+    /* =========================
+       제작자에서 돌아가기
+    ========================= */
+
+    document
+        .getElementById("creator-back")
+        .addEventListener("click", function () {
+
+            movePage(7);
+
+        });
+
+</script>
+
+</body>
+</html>
